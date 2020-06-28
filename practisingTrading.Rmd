@@ -1,0 +1,463 @@
+---
+title: "practisingTrading"
+author: "FerSa"
+date: "6/27/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(PortfolioAnalytics)
+library(foreach)
+library(iterators)
+library(ROI)
+library(ROI.plugin.quadprog)
+library(ROI.plugin.glpk)
+library(tidyverse)
+library(tidyquant)
+library(PerformanceAnalytics)
+library(PortfolioAnalytics)
+library(dplyr)
+library(xts)
+library(zoo)
+library(tibble)
+
+#Maximizing Mean Return
+#The objective to maximize mean return is a linear problem of the form:
+
+#maximize   wµˆ(l)
+#w
+
+#Where µˆ is the estimated mean asset returns and w is the set of weights. Because this
+#is a linear problem, it is well suited to be solved using a linear programming solver. For
+#these types of problems, PortfolioAnalytics uses the ROI package with the glpk plugin
+
+
+
+
+
+data(edhec)
+data(edhec)
+returns <- edhec[, 1:4]
+colnames(returns) <- c("CA", "CTAG", "DS", "EM")
+print(head(returns, 5))
+
+tail(returns,5)
+
+
+
+
+#library(zoo)
+#z <- read.zoo(df)
+#returns <- as.data.frame(returns)
+#class(returns)   
+
+#rownames_to_column()
+
+#returns <- rownames_to_column(returns, var="Fecha")
+
+
+
+
+#MyReturns <- returns %>% 
+#  filter(EM >= "0.0060" & EM <= "0.0065")
+
+
+# Get a character vector of the fund names
+funds <- colnames(returns)
+
+# Create portfolio object
+
+portf_maxret <- portfolio.spec(assets=funds)
+
+# Add constraints to the portfolio object
+portf_maxret <- add.constraint(portfolio=portf_maxret, type="full_investment")
+
+portf_maxret <- add.constraint(portfolio=portf_maxret, type="box",
+                               min=c(0.02, 0.05, 0.03, 0.02), 
+                               max=c(0.55, 0.6, 0.65, 0.5))
+
+
+
+# Add objective to the portfolio object
+portf_maxret <- add.objective(portfolio=portf_maxret, type="return", name="mean")
+
+
+summary(portf_maxret)
+
+
+
+# Run the optimization
+
+opt_maxret <- optimize.portfolio(R=returns, portfolio=portf_maxret,
+                                 optimize_method="ROI", trace=TRUE)
+
+
+print(opt_maxret)
+opt_maxret
+summary(opt_maxret)
+
+
+
+
+names(opt_maxret)
+
+
+
+extractStats(opt_maxret)
+
+
+
+extractWeights(opt_maxret)
+
+
+
+
+```
+```{r}
+#The plot method charts of the optimal weights with the box constraints along with the
+#optimal portfolio in risk-return space. The blue dots are the optimal weights and the gray
+#triangles are the min and max of the box constraints.
+library(graphics)
+plot.new()
+plot(opt_maxret, chart.assets=TRUE, xlim=c(0.02, 0.18))
+
+
+
+
+
+#The optimal portfolio can be plotted in risk-return space along with other feasible
+#portfolios. The return metric is defined in the return.col argument and the risk metric
+#is defined in the risk.col argument. The scatter chart includes the optimal portfolio (blue
+#dot) and other feasible portfolios (gray circles) to show the overall feasible space given the
+#constraints. By default, if rp is not passed in, the feasible portfolios are generated with
+#random_portfolios to satisfy the constraints of the portfolio object.
+#Volatility as the risk metric
+library(PerformanceAnalytics)
+library(PortfolioAnalytics)
+
+chart.RiskReward(opt_maxret,return.col="mean", risk.col="sd",
+                 chart.assets=TRUE, xlim=c(0.01, 0.05), main="Maximum Return")
+
+
+
+
+#Backtesting
+#An out of sample backtest is run with optimize.portfolio.rebalancing. In this example, an initial training period of 36 months is used and the portfolio is rebalanced
+#quarterly
+
+
+bt_maxret <- optimize.portfolio.rebalancing(R=returns, portfolio=portf_maxret,
+                                             optimize_method="ROI",
+                                             rebalance_on="quarters",
+                                             training_period=36)
+
+
+
+bt_maxret
+summary(bt_maxret)
+
+names(bt_maxret)
+
+
+
+extractStats(bt_maxret)
+
+
+
+extractWeights(bt_maxret)
+
+
+
+#Maximizing Mean Return
+#The objective to maximize mean return is a linear problem of the form:
+
+#maximize   wµˆ(l)
+#w
+
+#Where µˆ is the estimated mean asset returns and w is the set of weights. Because this
+#is a linear problem, it is well suited to be solved using a linear programming solver. For
+#these types of problems, PortfolioAnalytics uses the ROI package with the glpk plugin
+
+
+#Minimizing Portfolio Variance
+#The objective to minimize portfolio variance is a quadratic problem of the form:
+
+#minimize    w^(0) *Σw
+#w
+
+#Where Σ is the estimated covariance matrix of asset returns and w is the set of weights.
+#Because this is a quadratic problem, it is well suited to be solved using a quadratic programming solver. For these #types of problems, PortfolioAnalytics uses the ROI package
+#with the quadprog plugin
+
+
+
+# Create portfolio object
+portf_minvar <- portfolio.spec(assets=funds)
+
+# Add full investment constraint to the portfolio object
+portf_minvar <- add.constraint(portfolio=portf_minvar, type="full_investment")
+
+# Add objective to minimize variance
+#The only constraint specified is the full investment constraint, therefore the #optimization problem is solving for the global minimum variance portfolio.
+
+
+portf_minvar <- add.objective(portfolio=portf_minvar, type="risk", name="var")
+
+ # Run the optimization
+
+opt_gmv <- optimize.portfolio(R=returns, portfolio=portf_minvar,
+ optimize_method="ROI", trace=TRUE)
+
+opt_gmv
+summary(opt_gmv)
+
+names(opt_gmv)
+
+
+
+extractStats(opt_gmv)
+
+
+
+extractWeights(opt_gmv)
+
+#Constrained Minimum Variance Portfolio
+
+
+# Add long only constraints
+portf_minvar <- add.constraint(portfolio=portf_minvar, type="box",
+ min=0, max=1)
+
+ # Add group constraints
+portf_minvar <- add.constraint(portfolio=portf_minvar,
+ type="group",
+ groups=list(groupA=1,
+ groupB=c(2, 3),
+ groupC=4),
+ group_min=c(0, 0.25, 0.10),
+ group_max=c(0.45, 0.6, 0.5))
+
+
+
+# Run the optimization
+opt_minvar <- optimize.portfolio(R=returns, portfolio=portf_minvar,
+ optimize_method="ROI", trace=TRUE)
+
+opt_minvar
+summary(opt_minvar)
+
+names(opt_minvar)
+
+
+
+extractStats(opt_minvar)
+
+
+
+extractWeights(opt_minvar)
+
+# Backtesting
+
+bt_gmv <- optimize.portfolio.rebalancing(R=returns, portfolio=portf_minvar,
+ optimize_method="ROI",
+ rebalance_on="quarters",
+ training_period=36)
+
+bt_gmv
+summary(bt_gmv)
+
+names(bt_gmv)
+
+
+
+tail(extractStats(bt_gmv))
+
+
+
+tail(extractWeights(bt_gmv))
+
+ chart.Weights(opt_minvar)
+
+ chart.Weights(bt_gmv)
+ 
+ 
+ 
+  extractObjectiveMeasures(bt_gmv)
+  
+  
+  
+  rr <- Return.portfolio(returns, weights = extractWeights(bt_gmv)) 
+charts.PerformanceSummary(rr)
+
+
+
+
+
+#Constrained Minimum Variance Portfolio
+
+# Add long only constraints
+portf_minvar <- add.constraint(portfolio=portf_minvar, type="box",
+ min=0, max=1)
+ # Add group constraints
+ portf_minvar <- add.constraint(portfolio=portf_minvar,
+ type="group",
+ groups=list(groupA=1,
+ groupB=c(2, 3),
+ groupC=4),
+ group_min=c(0, 0.25, 0.10),
+ group_max=c(0.45, 0.6, 0.5))
+
+# Run the optimization
+ opt_minvar <- optimize.portfolio(R=returns, portfolio=portf_minvar,
+ optimize_method="ROI", trace=TRUE)
+ 
+ 
+# Backtesting
+ bt_minvar <- optimize.portfolio.rebalancing(R=returns, portfolio=portf_minvar,
+ optimize_method="ROI",
+ rebalance_on="quarters",
+ training_period=36)
+ 
+ opt_minvar
+summary(opt_minvar)
+
+names(opt_minvar)
+
+
+
+extractStats(opt_minvar)
+
+
+
+extractWeights(opt_minvar)
+extractWeights(opt_minvar)
+
+
+ chart.Weights(opt_minvar)
+
+ chart.Weights(bt_minvar)
+ 
+ 
+ 
+  extractObjectiveMeasures(opt_minvar)
+  
+  
+  
+  rr <- Return.portfolio(returns, weights = extractWeights(opt_minvar)) 
+charts.PerformanceSummary(rr)
+
+  rr <- Return.portfolio(returns, weights = extractWeights(bt_minvar)) 
+charts.PerformanceSummary(rr)
+
+
+ # Maximizing Quadratic Utility
+
+
+# The objective to maximize quadratic utility is a quadratic problem of the form:
+#maximize w^(0)*µ  −  λ/2 * w^(0) *Σw
+#w
+
+#Where µ is the estimated mean asset returns, λ is the risk aversion parameter, Σ is
+#the estimated covariance matrix of asset returns and w is the set of weights. Quadratic
+#utility maximizes return while penalizing variance. The λ risk aversion parameter controls
+#how much portfolio variance is penalized. Because this is a quadratic problem, it is well
+#suited to be solved using a quadratic programming solver. For these types of problems,
+#PortfolioAnalytics uses the ROI package with the quadprog plugin 
+
+
+
+ #Portfolio Object
+# Create initial portfolio object
+init_portf <- portfolio.spec(assets=funds)
+
+# Create full investment constraint
+
+fi_constr <- weight_sum_constraint(type="full_investment")
+
+ # Create long only constraint
+
+lo_constr <- box_constraint(type="long_only", assets=init_portf$assets)
+
+# Combine the constraints in a list
+qu_constr <- list(fi_constr, lo_constr)
+
+
+# Create return objective
+ret_obj <- return_objective(name="mean")
+
+
+# Create variance objective specifying a risk_aversion parameter which controls
+#how much the variance is penalized
+var_obj <- portfolio_risk_objective(name="var", risk_aversion=0.25)
+
+ # Combine the objectives into a list
+
+qu_obj <- list(ret_obj, var_obj)
+
+# Run the optimization
+opt_qu <- optimize.portfolio(R=returns, portfolio=init_portf,
+ constraints=qu_constr,
+ objectives=qu_obj,
+ optimize_method="ROI",
+ trace=TRUE)
+
+ opt_qu
+summary(opt_qu)
+
+# Backtesting
+
+bt_qu <- optimize.portfolio.rebalancing(R=returns, portfolio=init_portf,
+ constraints=qu_constr,
+ objectives=qu_obj,
+ optimize_method="ROI",
+ rebalance_on="quarters",
+ training_period=36)
+
+
+
+
+ bt_qu
+summary(bt_qu)
+
+names(bt_qu)
+
+
+
+extractStats(bt_qu)
+
+
+
+extractWeights(opt_qu)
+extractWeights(bt_qu)
+  extractObjectiveMeasures(bt_qu)
+
+
+ chart.Weights(opt_qu)
+
+ 
+   rr <- Return.portfolio(returns, weights = extractWeights(opt_qu)) 
+charts.PerformanceSummary(rr)
+
+ weights <- extractWeights(bt_qu)
+
+ weights <- as.data.frame(weights)
+
+ 
+ weights <- weights %>%
+   filter(CA != "NA" & CTAG != "NA" & DS != "NA" & EM != "NA") 
+ 
+
+  rr <- Return.portfolio(returns, weights = weights) 
+charts.PerformanceSummary(rr)
+
+
+
+
+ 
+  
+```
+

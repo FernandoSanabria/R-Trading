@@ -1,0 +1,52 @@
+---
+title: "maximizandoRetornosGenSa"
+author: "FerSa"
+date: "6/25/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(PortfolioAnalytics)
+tickers <- c("WALMEX.MX", "BBD", "KOF", "GFNORTEO.MX", "TV")      
+library(quantmod)
+portfolioPrices <- NULL
+for(ticker in tickers) {
+  portfolioPrices <- cbind(portfolioPrices, getSymbols.yahoo(ticker,
+                                                               from='2020-1-1', periodicity="daily",auto.assign=FALSE)[,6])  
+}
+
+head(portfolioPrices) 
+
+
+
+#ROC: Rate of change. % de variacion entre precio actual y precio de
+#periodo anterior. 
+portfolioReturns <- na.omit(ROC(portfolioPrices))  
+
+portf <- portfolio.spec(colnames(portfolioReturns))
+
+# el 1 hace referencia a que se cumpla para todos los elementos del trade
+portf <- add.constraint(portf, type="weight_sum", min_sum=1,
+                        max_sum=1)
+# este tipo de restricción indica que ninguna acción tendra menos de 10% ni mas de 40% del presupuesto
+portf <- add.constraint(portf, type="box", min=.10, max=.40)
+
+# retorno monitoreado basado en los promedios
+portf <- add.objective(portf, type="return", name="mean")
+
+# riesgo monitoreado segun la desviación estandar
+portf <- add.objective(portf, type="risk", name="StdDev")
+
+library(GenSA)
+
+# optimiza los pesos con el metodo Gensa generalized simulated aniling
+optPort <- optimize.portfolio(portfolioReturns, portf, 
+                              optimize_method ="GenSA")
+optPort  
+
+```
+

@@ -1,0 +1,66 @@
+---
+title: "velasJaponesasTrading"
+author: "FerSa"
+date: "6/25/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(quantmod)
+library(PerformanceAnalytics)
+
+
+#Ver con velas japonesas 
+getSymbols( Symbols="BBD", src="yahoo",
+            from = "2019-03-02",
+            to = "2020-06-24")
+
+barChart(BBD, theme = "black")  
+
+candleChart(BBD, multi.col = TRUE, theme = "black")
+
+
+#
+getSymbols( Symbols="WALMEX.MX", src="yahoo",
+            from = "2019-03-02",
+            to = "2020-06-24")
+
+barChart(WALMEX.MX, theme = "white")  
+
+candleChart(WALMEX.MX, multi.col = FALSE, theme = "white") 
+
+
+#
+getSymbols( Symbols="TV", src="yahoo",
+            from = "2019-03-02",
+            to = "2020-06-24")
+
+barChart(TV, theme = "white")  
+
+candleChart(TV, multi.col = TRUE, theme = "white") 
+
+#
+getSymbols( Symbols="GFNORTEO.MX", src="yahoo",
+            from = "2019-03-02",
+            to = "2020-06-24")
+
+barChart(GFNORTEO.MX, theme = "white")  
+
+candleChart(GFNORTEO.MX, multi.col = TRUE, theme = "white") 
+
+#
+getSymbols( Symbols="KOF", src="yahoo",
+            from = "2019-03-02",
+            to = "2020-06-24")
+
+barChart(KOF, theme = "white")  
+
+candleChart(KOF, multi.col = TRUE, theme = "white") 
+install.packages("xts")
+
+```
+

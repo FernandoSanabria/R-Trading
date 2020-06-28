@@ -1,0 +1,36 @@
+---
+title: "macd-Rsi-Atr-IndexTrading"
+author: "FerSa"
+date: "6/25/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(quantmod)
+
+getSymbols("KOF")
+chartSeries(KOF,subset = '2020',TA='addBBands();addVo();addMACD();addRSI();addATR()')
+
+
+getSymbols("BBD")
+chartSeries(BBD,subset = '2020',TA='addBBands();addVo();addMACD();addRSI();addATR()')
+
+getSymbols( Symbols="GFNORTEO.MX", src="yahoo",
+            from = "2019-03-02")
+
+getSymbols("GFNORTEO.MX")
+chartSeries(GFNORTEO.MX,subset = '2020',TA='addBBands();addVo();addMACD();addRSI();addATR()')
+
+
+getSymbols("TV")
+chartSeries(TV,subset = '2020',TA='addBBands();addVo();addMACD();addRSI();addATR()')
+
+getSymbols("WALMEX.MX")
+chartSeries(WALMEX.MX,subset = '2020',TA='addBBands();addVo();addMACD();addRSI();addATR()')
+
+
+```
+

@@ -1,0 +1,86 @@
+---
+title: "rMarkdownTrading"
+author: "FerSa"
+date: "6/24/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+library(quantmod)
+library(PerformanceAnalytics)
+date <- "2019-1-15"
+TV <- getSymbols.yahoo("TV", env=globalenv(), from=date)
+TVClose <- getSymbols.yahoo("TV", from=date, auto.assign=F) [,6]
+
+TVRets <- na.omit(dailyReturn(TVClose, type="log"))
+# logarithmic returns vs time
+chartSeries(TVRets)  
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+library(quantmod)
+library(PerformanceAnalytics)
+BBD <- getSymbols.yahoo("BBD", env=globalenv(), from=date)
+BBDClose <- getSymbols.yahoo("BBD", from=date, auto.assign=F) [,6]
+
+#returns 
+BBDRets <- na.omit(dailyReturn(BBDClose, type="log"))
+# logarithmic returns vs time
+chartSeries(BBDRets) 
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+library(quantmod)
+library(PerformanceAnalytics)
+WALMEX.MX <- getSymbols.yahoo("WALMEX.MX", env=globalenv(), from=date)
+WALMEX.MXClose <- getSymbols.yahoo("WALMEX.MX", from=date, auto.assign=F) [,6]
+
+#returns 
+WALMEX.MXRets <- na.omit(dailyReturn(WALMEX.MXClose, type="log"))
+# logarithmic returns vs time
+chartSeries(WALMEX.MXRets)
+```
+
+```{r}
+library(quantmod)
+library(PerformanceAnalytics)
+GFNORTEOMX <- getSymbols.yahoo("GFNORTEO.MX", env=globalenv(), from=date)
+GFNORTEOMXClose <- getSymbols.yahoo("GFNORTEO.MX", from=date, auto.assign=F) [,6]
+
+#returns 
+GFNORTEOMXRets <- na.omit(dailyReturn(GFNORTEOMXClose, type="log"))
+# logarithmic returns vs time
+chartSeries(GFNORTEOMXRets) 
+```
+```{r}
+library(quantmod)
+library(PerformanceAnalytics)
+
+FEMSAUBMX <- getSymbols.yahoo("FEMSAUB.MX", env=globalenv(), from=date)
+FEMSAUBMXClose <- getSymbols.yahoo("FEMSAUB.MX", from=date, auto.assign=F) [,6]
+
+#returns 
+FEMSAUBMXRets <- na.omit(dailyReturn(FEMSAUBMXClose, type="log"))
+# logarithmic returns vs time
+chartSeries(FEMSAUBMXRets) 
+
+
+
+```
+

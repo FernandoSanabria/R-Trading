@@ -1,0 +1,22 @@
+---
+title: "histogramasTrading"
+author: "FerSa"
+date: "6/25/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+BBD.bradesco = read.csv("/home/akasha/Documents/TRADING-R-PLATZI-master/BBD-bradesco.csv")
+
+
+hist(BBD.bradesco$Close, breaks = 60, col = "blue")  
+
+
+
+
+```
+

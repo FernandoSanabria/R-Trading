@@ -1,0 +1,64 @@
+---
+title: "OrangeEconomy"
+author: "FerSa"
+date: "6/13/2020"
+output: html_document
+
+```{r}
+orangeec = read.csv("/home/akasha/Documents/orangeec.csv")
+data(orangeec)
+summary(orangeec)
+
+```
+Parece que hay correlación
+```{r}
+
+pairs(orangeec[,6:10])
+```
+
+```{r}
+library(ggplot2)
+
+  ggplot()+geom_histogram(data = orangeec,
+                          aes(x=Internet.penetration...population),fill="green",color="blue",
+                          binwidth=5)+
+    labs(x="Porcentaje de la población", 
+         y="NUmero de paise",
+         title = "Penetración de INternet")+
+
+    theme(legend.position = "none")+
+    theme(panel.background = element_blank(),panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())
+```
+```{r}
+library(dplyr)
+  economy <- mean(orangeec$GDP.PC)
+
+ orangeec <- orangeec %>% 
+                    mutate(descriptiveGDP.PC =ifelse(GDP.PC < economy,
+                                                     "Por debajo del promedio",
+                                                     "Por encima del promedio"))
+ 
+
+```
+
+```{r}
+ggplot(orangeec, aes( x= descriptiveGDP.PC, y = Creat.Ind...GDP,
+                     fill= descriptiveGDP.PC ))+
+  geom_boxplot(alpha=0.4)+
+  labs(x="Tipo de país", y="% Total GDP Orange Industry",
+       title = "Contribución de la economia naranja según el PIB per cap.")+
+  theme(legend.position = "none")+
+  theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+  
+```
+
+
+
+
+
+
+
+

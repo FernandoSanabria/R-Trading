@@ -1,0 +1,133 @@
+---
+title: "comparaciónCruzadaConDailyReturn"
+author: "FerSa"
+date: "6/26/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# 1. Load libraries.
+library(Quandl)
+library(scales)
+library(gridExtra)   
+library(TTR)
+library(jsonlite)
+library(xtable)
+library(gtable)
+library(grid)
+library(dplyr)
+
+# 2. Load  
+library(tidyverse)
+library(httr)
+library(readxl)
+library(lubridate)
+library(reshape2)
+library(quantmod)
+
+# 3. Set working directory. Estoy llamando mi codigo. 
+
+
+# 4. Quandl authentication key. Se debe generar una api key en Quandl
+
+#Evaluar la estrategia de long y short en cada cia.
+
+
+
+get_data <- function(ticker, from, to = Sys.Date()) {
+  return(getSymbols.yahoo(ticker, from = from, to = to, auto.assign=F))
+}
+
+
+getSymbolsYahoo <- function(ticker,from) {
+  data_full <- get_data(ticker,from)
+  data_full <- data.frame(
+    "Date"=as.Date(rownames(as.data.frame(data_full))),
+    "Open"=as.data.frame(data_full)[,1],
+    "High"=as.data.frame(data_full)[,2],
+    "Low"=as.data.frame(data_full)[,3],
+    "Close"=as.data.frame(data_full)[,4],
+    "Volume"=as.data.frame(data_full)[,5],
+    "Adj.Close"=as.data.frame(data_full)[,6]
+  )
+}
+ILF = NULL
+PFL = NULL
+
+
+
+
+PFL <- getSymbolsYahoo("KOF",'2015-01-01')  %>%
+filter(Date >= "2015-01-01")
+
+
+
+
+
+#iShares Latin America 40 ETF (ILF)
+ILF <- getSymbolsYahoo("ILF",'2015-01-01') %>% 
+  filter(Date >= "2015-01-01")
+
+ILF <- ILF %>%
+  mutate( ticker = "ILF")
+
+PFL <- PFL %>%
+  mutate(signal = ifelse(as.numeric(format(Date, "%m")) <= 9,1,-1), ticker = "M01")
+
+# 5. Calcular senal de trading para la estrategia M01. 
+# PFL <- PFL %>%
+#   mutate(signal = ifelse(as.numeric(format(date, "%m")) <= 9,1,-1), ticker = "M01")
+
+# 6. Calcular retornos diarios, senal de returno, retornos acumulados, 
+#rolling retornos acumulados, drawdown, 
+# y sharpe ratio. 
+head(PFL)
+PFL <- PFL %>%
+  mutate(daily_return = ifelse(row_number() == 1, 0, Adj.Close / lag(Adj.Close, 1) - 1), 
+         signal_return = daily_return * signal, 
+         #retornos acumulados
+         cum_return = cumprod(1 + signal_return) - 1, 
+         cum_return_3m = (cum_return + 1) / lag(cum_return + 1, 63) - 1, 
+         cum_return_12m = (cum_return + 1) / lag(cum_return + 1, 252) - 1, 
+         drawdown = (cum_return + 1) / cummax(cum_return + 1) - 1, 
+         sd_12m = runSD(signal_return, n = 252)*sqrt(252), 
+         sharpe_12m = SMA(cum_return_12m / sd_12m), 252)
+
+ILF <- ILF %>% 
+  mutate(daily_return = ifelse(row_number() == 1, 0, Adj.Close / lag(Adj.Close, 1) - 1), 
+         cum_return = cumprod(1 + daily_return) - 1, 
+         cum_return_3m = (cum_return + 1) / lag(cum_return + 1, 63) - 1, 
+         cum_return_12m = (cum_return + 1) / lag(cum_return + 1, 252) - 1, 
+         drawdown = (cum_return + 1) / cummax(cum_return + 1) - 1, 
+         sd_12m = runSD(daily_return, n = 252)*sqrt(252), 
+         sharpe_12m = SMA(cum_return_12m / sd_12m), 252)
+
+combined= NULL
+combined <- bind_rows(PFL, ILF)
+tail(combined)
+
+
+# 7. Plot equity curve versus benchmark.
+
+
+
+###
+ ggplot(combined, aes(x = Date, y = cum_return)) + 
+    geom_line(aes(colour = ticker)) + 
+    labs(title = "Equity Curve Versus Benchmark", 
+         subtitle = "Evaluación de desempeno de la estrategia", 
+         y = "Cumulative Return", 
+         x = "Date") + 
+    geom_hline(yintercept = 0) + 
+  theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+
+
+```
+

@@ -1,0 +1,34 @@
+*** comandos terminal linux
+
+sudo -u postgres psql
+npm run setup
+node setup.js --y
+npm run setup -- --y
+npm init
+node examples/index.js 
+npm i --save-dev standard nodemon
+npm i --save debug mosca redis chalk
+npm i -g mqtt
+mqtt pub -t 'agent/message' -h localhost -m 'hellow from terminal'
+
+mqtt pub -t 'agent/message' -m '{"agent": {"uuid": "yxy","name": "primer test", "username": "asus","pid": 10, "hostname": "WIFFIAK"}, "metrics": [{ "type": "memory", "value": "12"}, {"type": "temp", "value": "23"}]}'
+
+psql -U imaginalo  -h 127.0.0.1 -d platziverse
+psql -U imaginalo -h localhost -d platziverse
+
+
+
+
+
+
+
+
+*** Comandos para la configuracion de la base de datos postsgresql
+
+CREATE ROLE imaginalo WITH LOGIN PASSWORD 'imaginalo';
+CREATE DATABASE platziverse;
+GRANT ALL PRIVILEGES ON DATABASE platziverse TO imaginalo; 
+
+
+
+

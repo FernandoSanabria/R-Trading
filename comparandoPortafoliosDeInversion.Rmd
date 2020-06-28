@@ -1,0 +1,90 @@
+---
+title: "comparandoPortafoliosDeInversion"
+author: "FerSa"
+date: "6/25/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(PerformanceAnalytics)
+library(PortfolioAnalytics)
+library(quantmod)
+library(dplyr)
+
+tickers <- c("WALMEX.MX", "BBD", "KOF", "GFNORTEO.MX", "TV")      
+
+weights <- c(.20, .20, 0.20, 0.20, 0.20)     
+
+portfolioPrices <- NULL
+for(ticker in tickers) {
+  portfolioPrices <- cbind(portfolioPrices, getSymbols.yahoo(ticker,
+                                                               from='2020-1-1', periodicity="daily",auto.assign=FALSE)[,6])  
+}
+
+head(portfolioPrices) 
+
+
+
+#ROC: Rate of change. % de variacion entre precio actual y precio de
+#periodo anterior. 
+portfolioReturns <- na.omit(ROC(portfolioPrices))  
+head(portfolioReturns)
+
+
+
+
+#Benchmark: con ILF> i-shares Latin Funds
+
+benchmarkPrices <- getSymbols.yahoo('ILF',
+                                    from='2019-3-2', to='2020-6-1', periodicity='daily', auto.assign=FALSE)[,6]
+
+
+benchmarkPrices2 <- getSymbols.yahoo('ILF',
+                                    from='2020-6-1', periodicity='daily', auto.assign=FALSE)[,6]
+
+
+benchmarkReturns <- na.omit(ROC(benchmarkPrices))   
+benchmarkReturns2 <- na.omit(ROC(benchmarkPrices2)) 
+head(benchmarkReturns) 
+
+
+#Retornos del portafolio segun el peso de cada accion. 
+#Sale una sola columna
+#porque son los retornos del portafolio segun los pesos. 
+#Funcion de returno de portafolio del paquete Performance analytics
+
+RetornosPortafolio <- Return.portfolio(portfolioReturns)
+#RetornosPortafolio
+
+#Grafica ROC
+portfolioReturns %>% chartSeries(TA="addROC()",subset="2020")
+
+#portfolioReturns2 %>% chartSeries(TA="addROC()",subset="2020")
+benchmarkReturns %>% chartSeries(TA="addROC()",subset="2020")
+
+benchmarkReturns2 %>% chartSeries(TA="addROC()",subset="2020")
+
+
+
+
+
+#Midiendo rentabilidad segun retorno esperado y riesgo 
+# si es mayor 1 tiene mayor riesgo contra el mercado comparativp
+CAPM.beta(portfolioReturns, benchmarkReturns, .035/252)     
+
+#Calcular retornos al año     
+# si el sharpe es mas positivo tiene mejor adaptacion al riesgo
+table.AnnualizedReturns(portfolioReturns)
+
+
+
+
+
+
+
+```
+

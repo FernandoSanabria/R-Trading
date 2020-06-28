@@ -1,0 +1,57 @@
+---
+title: "RetornosTradingConR"
+author: "FerSa"
+date: "6/25/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(quantmod)
+library(PerformanceAnalytics)
+
+date <- "2019-3-2"    
+TVClose <- getSymbols.yahoo("TV", from=date, auto.assign = F)[,6]
+
+
+TVRets <- na.omit(dailyReturn(TVClose, type="log")) 
+chartSeries(TVRets)    
+
+#Femsa    
+date <- "2019-3-2"  
+KOFClose <- getSymbols.yahoo("KOF", from=date, auto.assign = F)[,6]
+
+
+KOFRets <- na.omit(dailyReturn(KOFClose, type="log")) 
+chartSeries(KOFRets) 
+
+#Grupo financiero banorte
+date <- "2019-3-2"  
+GFNORTEO.MXClose <- getSymbols.yahoo("GFNORTEO.MX", from=date, auto.assign = F)[,6]
+
+
+GFNORTEO.MXRets <- na.omit(dailyReturn(GFNORTEO.MXClose, type="log")) 
+chartSeries(GFNORTEO.MXRets) 
+
+#Walmart México
+date <- "2019-3-2"  
+WALMEX.MXClose <- getSymbols.yahoo("WALMEX.MX", from=date, auto.assign = F)[,6]
+
+
+WALMEX.MXRets <- na.omit(dailyReturn(WALMEX.MXClose, type="log")) 
+chartSeries(WALMEX.MXRets) 
+
+#Bradesco
+date <- "2019-3-2"  
+BBDClose <- getSymbols.yahoo("BBD", from=date, auto.assign = F)[,6]
+
+
+BBDCloseRets <- na.omit(dailyReturn(BBDClose, type="log")) 
+chartSeries(BBDCloseRets)     
+    
+
+```
+
