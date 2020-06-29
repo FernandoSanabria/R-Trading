@@ -2,7 +2,9 @@
 title: "practisingTrading"
 author: "FerSa"
 date: "6/27/2020"
-output: html_document
+output:
+  pdf_document: 
+    latex_engine: xelatex
 ---
 
 ```{r setup, include=FALSE}

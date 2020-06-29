@@ -696,13 +696,13 @@ library(PortfolioAnalytics)
 library(dplyr)
 
 
-stocks <- c("KOF", "TV", "BBD", "WALMEX.MX", "GFNORTEO.MX")
+stocks <- c("KOF", "TV", "WALMEX.MX")
 
 stock_data <- tq_get(stocks,
                      get = "stock.prices",
                      from = Sys.Date() - months(12),
                      to = Sys.Date())
-
+head(stock_data,5)
 Ra <- stocks %>%
   tq_get(get  = "stock.prices",
          from = Sys.Date() - months(12),
@@ -713,14 +713,14 @@ Ra <- stocks %>%
                period     = "monthly", 
                col_rename = "Ra")
 Ra
-optimize.portfolio.rebalancing
-rp <- random_portfolios(combined, 10000, "sample")
-rando
+head(Ra,5)
+
+date = "2015-01-01"
 init.investment <- 1000
 
 growth <- Ra %>% arrange(date) %>%
   mutate(final_value = init.investment * cumprod(1 + returns)) %>%
-  arrange(desc(final_value))
+  arrange(desc(final_value)) 
   growth %>% filter(date == max(date)) %>% select(-date)
 
 growth %>% ggplot(aes(x = date, y = final_value, color = symbol)) +
@@ -772,7 +772,7 @@ tickers <- c("AAPL", "NFLX", "FB", "AMZN")
 portfolioPrices <- NULL
 for(ticker in tickers) {
   portfolioPrices <- cbind(portfolioPrices, getSymbols.yahoo(ticker,
-                                                             from="2019-3-1", periodicity="daily",auto.assign=FALSE)[,6])  
+                                                             from="2019-3-1", to ="2020-3-1",  periodicity="daily",auto.assign=FALSE)[,6])  
 }
 
 
@@ -795,13 +795,15 @@ portf <- add.objective(portf, type="return", name="mean")
 # riesgo monitoreado segun la desviación estandar
 portf <- add.objective(portf, type="risk", name="StdDev")
 
-library(GenSA)
+install.packages("DEoptim")
+library(DEoptim)
 
 # optimiza los pesos con el metodo Gensa generalized simulated aniling
 optPort <- optimize.portfolio(portfolioReturns, portf, 
                               optimize_method ="GenSA")
 optPort  
 
+add.
 
 
 
